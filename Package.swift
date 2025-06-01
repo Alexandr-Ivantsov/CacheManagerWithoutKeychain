@@ -14,6 +14,9 @@ let packageSettings = PackageSettings(
 
 let package = Package(
     name: "CacheManagerWithoutKeychain",
+    platforms: [
+        .iOS(.v15)
+    ],
     products: [
         .library(name: "CacheManagerWithoutKeychain", targets: ["CacheManagerWithoutKeychain"])
     ],
