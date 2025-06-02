@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - CacheUseCase
 
-protocol CacheUseCase: AnyObject {
+public protocol CacheUseCase: AnyObject {
 
     func save<T: Codable>(data: T, for key: String) throws
     func load<T: Codable>(from key: String) throws -> T?
@@ -19,7 +19,7 @@ protocol CacheUseCase: AnyObject {
 
 // MARK: - CacheUseCaseImpl
 
-final class CacheUseCaseImpl {
+public final class CacheUseCaseImpl {
 
     // MARK: - Private properties
 
@@ -28,7 +28,7 @@ final class CacheUseCaseImpl {
 
     // MARK: - CacheConfig
 
-    struct CacheConfig {
+    public struct CacheConfig {
         let data: Codable?
         let timeExpiration: Int
         let memoryCapacity: Int
@@ -56,14 +56,14 @@ final class CacheUseCaseImpl {
 
 extension CacheUseCaseImpl: CacheUseCase {
 
-    func save<T: Codable>(data: T, for key: String) throws {
+    public func save<T: Codable>(data: T, for key: String) throws {
         let encoder = JSONEncoder()
         let jsonData = try encoder.encode(data)
 
         try fileManagerService.save(data: jsonData, to: key)
     }
 
-    func load<T: Codable>(from key: String) throws -> T? {
+    public func load<T: Codable>(from key: String) throws -> T? {
         let fileUrl = try fileManagerService.getFileUrl(fileName: key)
 
         guard fileManagerService.fileExist(from: key) else {
@@ -84,7 +84,7 @@ extension CacheUseCaseImpl: CacheUseCase {
         return try decoder.decode(T.self, from: jsonData)
     }
 
-    func remove(for key: String) throws {
+    public func remove(for key: String) throws {
         do {
             try fileManagerService.removeFile(at: key)
         } catch {
