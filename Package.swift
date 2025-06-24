@@ -26,7 +26,9 @@ let package = Package(
     ],
     targets: [
         .target(name: "CacheManagerWithoutKeychain",
-                dependencies: [])
+                dependencies: [
+                    .product(name: "CryptoSwift", package: "CryptoSwift")
+                ])
     ]
 )
 
