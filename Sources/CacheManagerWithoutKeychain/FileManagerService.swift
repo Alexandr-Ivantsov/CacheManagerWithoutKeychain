@@ -22,7 +22,8 @@ final class FileManagerService {
     // MARK: - Life cycle
 
     private init() {
-        self.encryptionKey = "123EncryptionKey123".data(using: .utf8)
+        let originalKey = "123EncryptionKey123".data(using: .utf8)!
+        self.encryptionKey = originalKey.sha256()
     }
 
     // MARK: - Public methods
@@ -61,8 +62,9 @@ final class FileManagerService {
 
     func loadData(from fileName: String) throws -> Data {
         let url = try getFileUrl(fileName: fileName)
-        let encryptedData = try encrypt(data: Data(contentsOf: url))
+        let encryptedData = try Data(contentsOf: url)
         let decryptedData = try decrypt(data: encryptedData)
+        
         return decryptedData
     }
 
@@ -84,26 +86,31 @@ final class FileManagerService {
 
         let keyBytes = Array(encryptionKey)
         let iv = AES.randomIV(AES.blockSize)
-        let aes = try AES(key: keyBytes, blockMode: CBC(iv: iv), padding: .pkcs7)
+        do {
+            let aes = try AES(key: keyBytes, blockMode: CBC(iv: iv), padding: .pkcs7)
+            let dataBytes = Array(data)
+            let encryptionBytes = try aes.encrypt(dataBytes)
 
-        let dataBytes = Array(data)
-        let encryptionBytes = try aes.encrypt(dataBytes)
+            return Data(iv + encryptionBytes)
 
-        return Data(iv + encryptionBytes)
+        } catch {
+            print("Ошибка при инициализации AES: \(error)")
+            throw FileManagerError.missingEncryptionKey(file: #file, line: #line)
+        }
     }
 
     private func decrypt(data: Data) throws -> Data {
-        guard let encryptionKey else {
+        guard let encryptionKey = encryptionKey else {
             throw FileManagerError.missingEncryptionKey(file: #file, line: #line)
         }
 
         let keyBytes = Array(encryptionKey)
         let ivSize = AES.blockSize
         let iv = Array(data.prefix(ivSize))
-        let ecnryptionBytes = Array(data.dropFirst(ivSize))
+        let encryptionBytes = Array(data.dropFirst(ivSize))
         let aes = try AES(key: keyBytes, blockMode: CBC(iv: iv), padding: .pkcs7)
 
-        let decryptedBytes = try aes.decrypt(ecnryptionBytes)
+        let decryptedBytes = try aes.decrypt(encryptionBytes)
         return Data(decryptedBytes)
     }
 

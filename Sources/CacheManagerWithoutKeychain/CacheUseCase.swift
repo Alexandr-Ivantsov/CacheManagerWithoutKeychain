@@ -66,10 +66,6 @@ extension CacheUseCaseImpl: CacheUseCase {
     public func load<T: Codable>(from key: String) throws -> T? {
         let fileUrl = try fileManagerService.getFileUrl(fileName: key)
 
-        guard fileManagerService.fileExist(from: key) else {
-            throw CacheError.fileNotFound(fileName: key, file: #file, line: #line)
-        }
-
         let jsonData = try fileManagerService.loadData(from: key)
 
         guard let creationDate = fileUrl.creationDate else {
@@ -81,6 +77,7 @@ extension CacheUseCaseImpl: CacheUseCase {
             throw CacheError.cacheIsExpired(fileName: key, file: #file, line: #line)
         }
         let decoder = JSONDecoder()
+        
         return try decoder.decode(T.self, from: jsonData)
     }
 
