@@ -111,6 +111,7 @@ final class FileManagerService {
         let aes = try AES(key: keyBytes, blockMode: CBC(iv: iv), padding: .pkcs7)
 
         let decryptedBytes = try aes.decrypt(encryptionBytes)
+        
         return Data(decryptedBytes)
     }
 
